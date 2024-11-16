@@ -5,5 +5,5 @@ from app.service.service import generate
 router = APIRouter()
 
 @router.post("/generate")
-async def get_example(prompt:TextRequest):
+async def generate_prompt(prompt: PromptRequest):
     return generate(prompt)
