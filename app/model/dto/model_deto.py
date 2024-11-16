@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 # For request structure
-class TextRequest(BaseModel):
+class PromptRequest(BaseModel):
     input_text: str
