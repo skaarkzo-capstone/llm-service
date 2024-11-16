@@ -6,7 +6,7 @@ from app.api.main import api_router
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.APP_NAME, version=settings.VERSION)
 
-    app.include_router(api_router, prefix=settings.API_PREFIX")
+    app.include_router(api_router, prefix=settings.API_PREFIX)
 
     return app
 

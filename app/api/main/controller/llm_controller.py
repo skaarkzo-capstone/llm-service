@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
-from app.model.dto.model_deto import TextRequest
-from app.service.service import generate
+from app.model.request.prompt_request import PromptRequest
+from app.service.llm_service import generate
 
 router = APIRouter()
 
