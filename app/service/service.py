@@ -11,7 +11,7 @@ model_id = "meta-llama/Llama-3.1-8B"
 # Sets up the tokenizer (Think of it as an encoder and decoder of requests and responses to and from the LLM)
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 # Load the model
-model = AutoModelForCausalLM.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16)
 # Ensure the model uses the GPU
 model = model.to(device)
 
