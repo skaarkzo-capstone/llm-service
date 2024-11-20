@@ -31,9 +31,20 @@ def generate(prompt):
     
 
 def chat(content):
+    system_role = (
+        "You are a financial analyst specializing in sustainability and environmentally friendly investments. "
+        "Evaluate the company data against the following eligibility criteria: "
+        "1. Pollution prevention and control: Projects involving collection, treatment, or recycling of emissions, waste, or contaminated soil. "
+        "2. Sustainable resource management: Activities contributing to sustainable agriculture, forestry, or biodiversity conservation. "
+        "3. Clean transportation: Development or maintenance of low-emission transportation systems. "
+        "4. Water management: Projects improving water treatment, recycling, or conservation. "
+        "5. Climate resilience: Adaptation projects reducing vulnerability to climate impacts. "
+        "6. Circular economy: Activities substituting virgin raw materials with recycled ones or promoting reuse. "
+        "Assess whether the provided company initiatives align with the UN Sustainable Development Goals (SDGs)."
+    )
     # Prepare the input as before
     chat = [
-        {"role": "system", "content": "You are a financial analyst with a major focus on sustainability and environmental friendly investments."},
+        {"role": "system", "content": system_role},
         {"role": "user", "content": content.input_text}
     ]
 
