@@ -2,6 +2,8 @@ from fastapi import HTTPException
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import torch
 import json
+from datetime import datetime
+
 
 # To make sure it utilizes the GPU if CUDA is installed
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -12,7 +14,7 @@ model_id = "meta-llama/Llama-3.1-8B-Instruct"
 # Sets up the tokenizer (Think of it as an encoder and decoder of requests and responses to and from the LLM)
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 # Load the model
-model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=BitsAndBytesConfig(load_in_8bit=True))
+model = AutoModelForCausalLM.from_pretrained(model_id, load_in_4bit=True, attn_implementation="flash_attention_2")
 # Ensure the model uses the GPU
 #model = model.to(device)
 
@@ -113,7 +115,45 @@ def chat(content):
     print("Decoded output:\n", decoded_output)
     print(type(decoded_output))
 
-    json_object = json.loads(decoded_output)
-    print(json_object)
+    data = json.loads(decoded_output)
 
-    return json_object
+    data["date"] = datetime.today().strftime('%Y-%m-%d')
+    print(data)
+
+    return data
+
+
+def summarize(content):
+    system_role = (
+        """Summarize the given input and send the response back. Nothing more, nothing less."""
+    )
+    
+    # Prepare the input as before
+    chat = [
+        {"role": "system", "content": system_role},
+        {"role": "user", "content": content}
+    ]
+
+    # 2: Apply the chat template
+    formatted_chat = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
+    print("Formatted chat:\n", formatted_chat)
+
+    # 3: Tokenize the chat
+    inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
+
+    print(len(inputs["input_ids"][0])) 
+
+    # Move the tokenized inputs to the same device the model is on (GPU/CPU)
+    inputs = {key: tensor.to(device) for key, tensor in inputs.items()}
+    print("Tokenized inputs:\n", inputs)
+
+    # 4: Generate text from the model
+    outputs = model.generate(**inputs, max_new_tokens=1000, temperature=0.1)
+    print("Generated tokens:\n", outputs)
+
+    # 5: Decode the output back to a string
+    decoded_output = tokenizer.decode(outputs[0][inputs['input_ids'].size(1):], skip_special_tokens=True)
+    print("Decoded output:\n", decoded_output)
+    print(type(decoded_output))
+
+    return decoded_output
