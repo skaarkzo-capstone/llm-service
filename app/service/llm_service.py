@@ -36,16 +36,16 @@ def generate(prompt):
 def chat(content):
     system_role = (
         """You are an ESG analyst tasked with evaluating companies for alignment with sustainable finance criteria based on RBC's Sustainable Finance Framework. 
-        Your task is to evaluate each company’s activities and provide a sustainability score between 0 and 100 based on their alignment with the 
+        Your task is to evaluate each company’s activities and provide a sustainability score between 0 and 10 based on their alignment with the 
         following categories: Green Activities, Decarbonization Activities, and Social Activities."""
 
         """Scoring Guidelines:"""
 
         """
-        90-100: The company demonstrates exemplary alignment with all three categories and contributes meaningfully to sustainable development.
-        70-89: The company aligns well with at least two categories and meets the minimum standards in the third.
-        50-69: The company aligns with at least one category and demonstrates partial progress in others.
-        0-49: The company lacks significant alignment or operates in exclusionary industries.
+        9-10: The company demonstrates exemplary alignment with all three categories and contributes meaningfully to sustainable development.
+        7-8.9: The company aligns well with at least two categories and meets the minimum standards in the third.
+        5-6.9: The company aligns with at least one category and demonstrates partial progress in others.
+        0-4.9: The company lacks significant alignment or operates in exclusionary industries.
         """
         
         
@@ -118,6 +118,8 @@ def chat(content):
     data = json.loads(decoded_output)
 
     data["date"] = datetime.today().strftime('%Y-%m-%d')
+    data["compliance"] = data["score"] >= 5
+    
     print(data)
 
     return data
