@@ -18,21 +18,6 @@ model = AutoModelForCausalLM.from_pretrained(model_id, load_in_4bit=True, attn_i
 # Ensure the model uses the GPU
 #model = model.to(device)
 
-def generate(prompt):
-    try:
-        # Tokenize the input text
-        input_ids = tokenizer.encode(prompt, return_tensors="pt").to(device)
-        # Generate an output from the LLM
-        output = model.generate(input_ids, max_new_tokens=512, temperature=0.1)
-        # Decode the output in human-readable form
-        response_text = tokenizer.decode(output[0], skip_special_tokens=True)
-
-        return {"response":response_text}
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-
 def chat(content):
     system_role = (
         """You are an ESG analyst tasked with evaluating companies for alignment with sustainable finance criteria based on RBC's Sustainable Finance Framework. 
