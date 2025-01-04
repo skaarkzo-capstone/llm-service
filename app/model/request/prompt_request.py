@@ -1,5 +1,6 @@
 from pydantic import BaseModel
+from typing import List
 
-# For request structure
-class PromptRequest(BaseModel):
-    input_text: str
+class ProductDTO(BaseModel):
+    name: str
+    description: str
