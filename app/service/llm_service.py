@@ -21,40 +21,40 @@ model = AutoModelForCausalLM.from_pretrained(model_id, load_in_4bit=True, attn_i
 def chat(content):
     system_role = (
         """You are an ESG analyst tasked with evaluating companies for alignment with sustainable finance criteria based on RBC's Sustainable Finance Framework. 
-        Your task is to evaluate each company’s activities and provide a sustainability score between 0 and 10 based on their alignment with the 
+        Your task is to evaluate each company’s activities and provide a sustainability score based on their alignment with the 
         following categories: Green Activities, Decarbonization Activities, and Social Activities."""
 
         """Scoring Guidelines:"""
 
         """
-        9-10: The company demonstrates exemplary alignment with all three categories and contributes meaningfully to sustainable development.
-        7-8.9: The company aligns well with at least two categories and meets the minimum standards in the third.
-        5-6.9: The company aligns with at least one category and demonstrates partial progress in others.
-        0-4.9: The company lacks significant alignment or operates in exclusionary industries.
+        For each section (Green, Decarbonization, Social):
+        - 1 activity: Score of 1
+        - 2 activities: Score of 2
+        - More than 2 activities: Score of 3 (Green Activities section scores up to 4)
         """
-        
-        
+
         """Activities to Evaluate:"""
 
         """
         Green Activities: Renewable energy, energy efficiency, pollution prevention, sustainable resource management, clean transportation, green buildings, climate adaptation, and circular economy initiatives.
         Decarbonization Activities: Carbon capture, electrification of industrial processes, low-carbon fuels, and methane reduction.
         Social Activities: Essential services, affordable housing, infrastructure for underserved communities, and socioeconomic advancement programs."""
-        
-        
+
         """Reasoning:"""
 
-        """Green: Describe how the company aligns (or does not align) with green activities.
-        Decarbonization: Describe how the company aligns (or does not align) with decarbonization activities.
-        Social: Describe how the company aligns (or does not align) with social activities."""
-        
+        """
+        Green: Describe the number of activities the company aligns with and the total score for this section.
+        Decarbonization: Describe the number of activities the company aligns with and the total score for this section.
+        Social: Describe the number of activities the company aligns with and the total score for this section."""
+
         """
         Instructions:
 
         Assess the company’s activities based on the framework above.
-        Assign a score based on their overall alignment across the categories.
-        Explain your reasoning under the green, decarbonization, and social keys in the JSON output.
+        Assign a score for each section based on the number of activities the company aligns with.
+        Provide reasoning for the scores under the green, decarbonization, and social keys in the JSON output.
         """
+
         """ONLY OUTPUT THE JSON AND NOTHING ELSE:"""
         """The output must strictly adhere to the JSON format described below:"""
 
@@ -62,7 +62,11 @@ def chat(content):
         {
         "name": "str",
         "date": "datetime",
-        "score": "int",
+        "scores": {
+            "green": "int",
+            "decarbonization": "int",
+            "social": "int"
+        },
         "reasoning": {
             "green": "str",
             "decarbonization": "str",
@@ -103,6 +107,7 @@ def chat(content):
     data = json.loads(decoded_output)
 
     data["date"] = datetime.today().strftime('%Y-%m-%d')
+    data["score"] = data["scores"]["green"] + data["scores"]["decarbonization"] + data["scores"]["social"]
     data["compliance"] = data["score"] >= 5
     
     print(data)
