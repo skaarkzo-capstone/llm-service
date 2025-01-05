@@ -11,12 +11,18 @@ device = "cuda:0" if torch.cuda.is_available() else "cpu"
 # Fetches and downloads the model if not already done so
 model_id = "meta-llama/Llama-3.1-8B-Instruct"
 
+# Define the quantization configuration
+quantization_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_compute_dtype=torch.float16
+)
+
 # Sets up the tokenizer (Think of it as an encoder and decoder of requests and responses to and from the LLM)
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 # Load the model
-model = AutoModelForCausalLM.from_pretrained(model_id, load_in_4bit=True, attn_implementation="flash_attention_2")
-# Ensure the model uses the GPU
-#model = model.to(device)
+model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype="auto", quantization_config=quantization_config, attn_implementation="flash_attention_2")
+# Ensure the entire model uses the GPU
+model.to(device)
 
 def chat(content):
     system_role = (
@@ -24,28 +30,28 @@ def chat(content):
         Your task is to evaluate each company’s activities and provide a sustainability score based on their alignment with the 
         following categories: Green Activities, Decarbonization Activities, and Social Activities."""
 
+        """Activities to Evaluate:"""
+
+        
+        """Look if company has any of the following Green Activities: Renewable energy, energy efficiency, pollution prevention, sustainable resource management, clean transportation, green buildings, climate adaptation, and circular economy initiatives."""
+        """Look if company has any of the following Decarbonization Activities: Carbon capture, electrification of industrial processes, low-carbon fuels, and methane reduction."""
+        """Look if company has any of the following Social Activities: Essential services, affordable housing, infrastructure for underserved communities, and socioeconomic advancement programs."""
+        
         """Scoring Guidelines:"""
 
         """
         For each section (Green, Decarbonization, Social):
-        - 1 activity: Score of 1
-        - 2 activities: Score of 2
-        - More than 2 activities: Score of 3 (Green Activities section scores up to 4)
+        - If company has 1 activity: Score of 1
+        - If company has 2 activities: Score of 2
+        - If company has more than 2 activities: Score of 3 (Green Activities section scores up to 4)
         """
-
-        """Activities to Evaluate:"""
-
-        """
-        Green Activities: Renewable energy, energy efficiency, pollution prevention, sustainable resource management, clean transportation, green buildings, climate adaptation, and circular economy initiatives.
-        Decarbonization Activities: Carbon capture, electrification of industrial processes, low-carbon fuels, and methane reduction.
-        Social Activities: Essential services, affordable housing, infrastructure for underserved communities, and socioeconomic advancement programs."""
 
         """Reasoning:"""
 
         """
-        Green: Describe the number of activities the company aligns with and the total score for this section.
-        Decarbonization: Describe the number of activities the company aligns with and the total score for this section.
-        Social: Describe the number of activities the company aligns with and the total score for this section."""
+        Green: Describe exactly which green activities the company aligns with and explain.
+        Decarbonization: Describe exactly which decarbonization activities the company aligns with and explain.
+        Social: Describe exactly which social activities the company aligns with and explain."""
 
         """
         Instructions:
@@ -96,8 +102,9 @@ def chat(content):
     print("Tokenized inputs:\n", inputs)
 
     # 4: Generate text from the model
-    outputs = model.generate(**inputs, max_new_tokens=1000, temperature=0.1)
+    outputs = model.generate(**inputs, max_new_tokens=1000)
     print("Generated tokens:\n", outputs)
+    print(len(outputs)) 
 
     # 5: Decode the output back to a string
     decoded_output = tokenizer.decode(outputs[0][inputs['input_ids'].size(1):], skip_special_tokens=True)
@@ -107,7 +114,7 @@ def chat(content):
     data = json.loads(decoded_output)
 
     data["date"] = datetime.today().strftime('%Y-%m-%d')
-    data["score"] = data["scores"]["green"] + data["scores"]["decarbonization"] + data["scores"]["social"]
+    data["score"] = int(data["scores"]["green"]) + int(data["scores"]["decarbonization"]) + int(data["scores"]["social"])
     data["compliance"] = data["score"] >= 5
     
     print(data)
