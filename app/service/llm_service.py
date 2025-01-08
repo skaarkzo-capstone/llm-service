@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from util import prompt
 import torch
@@ -25,6 +24,7 @@ model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype="auto", quant
 # Mount the entire model onto GPU
 model.to(device)
 
+# Function to evaluate companies given scraped data
 def evaluate(content):
     system_role = (prompt.system_prompt)
     
@@ -43,7 +43,7 @@ def evaluate(content):
 
     print(len(inputs["input_ids"][0])) 
 
-    # Move the tokenized inputs to the same device the model is on (GPU/CPU)
+    # Mount the tokenized inputs on GPU
     inputs = {key: tensor.to(device) for key, tensor in inputs.items()}
     print("Tokenized inputs:\n", inputs)
 
@@ -68,6 +68,7 @@ def evaluate(content):
     return data
 
 
+# Function to summarize any given content
 def summarize(content):
     system_role = (
         """Summarize the given input and send the response back. Nothing more, nothing less."""
