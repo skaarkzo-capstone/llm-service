@@ -1,5 +1,5 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-from util import prompt
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, pipeline
+from app.util import prompt
 import torch
 import json
 from datetime import datetime
@@ -9,20 +9,20 @@ from datetime import datetime
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 # Fetches and downloads the model if not already done so
-model_id = "meta-llama/Llama-3.1-8B-Instruct"
+model_id = "meta-llama/Llama-3.2-3B-Instruct"
 
 # Define the quantization configuration
 quantization_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_compute_dtype=torch.float16
+    load_in_8bit=True,
+    bnb_8bit_compute_dtype=torch.float16
 )
 
 # Sets up the tokenizer (Think of it as an encoder and decoder of requests and responses to and from the LLM)
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 # Initialize the model
-model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype="auto", quantization_config=quantization_config, attn_implementation="flash_attention_2")
+model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype="auto", device_map="auto", attn_implementation="flash_attention_2")
 # Mount the entire model onto GPU
-model.to(device)
+#model.to(device)
 
 # Function to evaluate companies given scraped data
 def evaluate(content):
