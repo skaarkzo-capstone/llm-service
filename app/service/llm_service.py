@@ -102,4 +102,20 @@ def summarize(content):
     print("Decoded output:\n", decoded_output)
     print(type(decoded_output))
 
-    return decoded_output
+    return decoded_outputdef chunk_text(text, chunk_size, overlap):
+    """
+    Splits text into word-based chunks of size `chunk_size`.
+    overlap helps maintain continuity between chunks.
+    """
+    words = text.split()
+    chunks = []
+    start = 0
+
+    # Loop through and 'chunkify' for every chunksize words
+    while start < len(words):
+        end = min(len(words), start + chunk_size)
+        chunk = " ".join(words[start:end])
+        chunks.append(chunk)
+        start += (chunk_size - overlap if chunk_size - overlap > 0 else chunk_size)
+
+    return chunks
