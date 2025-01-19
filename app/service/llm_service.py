@@ -121,7 +121,7 @@ def chunk_text(text, chunk_size, overlap):
     return chunks
 
 # Initiate the summarization process
-def summarize_large_text_once(input, chunk_size=1024, overlap=0, max_new_tokens=100):
+def summarize(input, chunk_size=1024, overlap=0, max_new_tokens=100):
     """
     1) Chunk the large text based on the chunk size
     2) Summarize each chunk individually and output length based on the max tokens field

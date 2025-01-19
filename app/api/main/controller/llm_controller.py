@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Body
-from app.service.llm_service import evaluate, summarize_large_text_once
+from app.service.llm_service import evaluate, summarize
 
 router = APIRouter()
 
@@ -9,4 +9,4 @@ async def generate_chat(content: dict = Body(...)):
 
 @router.post("/summarize")
 async def summarize(prompt: dict = Body(...)):
-    return summarize_large_text_once(prompt)
+    return summarize(prompt)
