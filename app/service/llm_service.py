@@ -127,6 +127,7 @@ def summarize(input, chunk_size=1024, overlap=0, max_new_tokens=100):
     2) Summarize each chunk individually and output length based on the max tokens field
     3) Combine those summaries into one string once all finished
     """
+    
     text = json.dumps(input, indent=2) # Prettify json into text
     print(text)
     chunks = chunk_text(text, chunk_size=chunk_size, overlap=overlap)
