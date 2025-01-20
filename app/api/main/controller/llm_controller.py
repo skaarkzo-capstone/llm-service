@@ -8,5 +8,5 @@ async def generate_chat(content: dict = Body(...)):
     return evaluate(content)
 
 @router.post("/summarize")
-async def generate_chat(prompt: dict = Body(...)):
+async def summarize_endpoint(prompt: dict = Body(...)):
     return summarize(prompt)
