@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, Body
-from app.service.llm_service import evaluate, summarize, financial_breakdown, evaluate_transation
+from app.service.llm_service import evaluate, summarize, financial_breakdown, evaluate_transation, pure_play
 
 router = APIRouter()
 
 @router.post("/evaluate")
 async def generate_chat(content: dict = Body(...)):
-    return evaluate(content)
+    return pure_play(content)
 
 @router.post("/evaluate/transaction")
 async def generate_chat(content: dict = Body(...)):
