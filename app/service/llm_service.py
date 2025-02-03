@@ -2,6 +2,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from app.util import prompt
 import torch
 import json
+import re
 from datetime import datetime
 
 
@@ -57,6 +58,63 @@ def evaluate(content):
     print("Decoded output:\n", decoded_output)
     print(type(decoded_output))
 
+    # Use regex to extract the first JSON object from the text.
+    match = re.search(r'\{.*\}', decoded_output, re.DOTALL)
+    if match:
+        json_string = match.group(0)
+        try:
+            data = json.loads(json_string)
+            # Now data is a valid Python dict containing your JSON.
+        except json.JSONDecodeError as e:
+            print("JSON decoding error:", e)
+    else:
+        print("No JSON found in the output.")
+
+    # json_conversion = convert_json(decoded_output)
+
+    # data = json.loads(json_conversion)
+
+    data["date"] = datetime.today().strftime('%Y-%m-%d')
+    data["score"] = int(data["scores"]["green"]) + int(data["scores"]["decarbonization"]) + int(data["scores"]["social"])
+    data["compliance"] = data["score"] >= 5
+    
+    print(data)
+
+    return data
+
+# Function to evaluate companies given scraped data
+def evaluate_transation(content):
+    system_role = (prompt.transaction_prompt)
+    
+    # Prepare the input as before
+    chat = [
+        {"role": "system", "content": system_role},
+        {"role": "user", "content": content}
+    ]
+
+    # 2: Apply the chat template
+    formatted_chat = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
+    print("Formatted chat:\n", formatted_chat)
+
+    # 3: Tokenize the chat
+    inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
+
+    print(len(inputs["input_ids"][0])) 
+
+    # Mount the tokenized inputs on GPU
+    inputs = {key: tensor.to(device) for key, tensor in inputs.items()}
+    print("Tokenized inputs:\n", inputs)
+
+    # 4: Generate text from the model
+    outputs = model.generate(**inputs, max_new_tokens=1000)
+    print("Generated tokens:\n", outputs)
+    print(len(outputs)) 
+
+    # 5: Decode the output back to a string
+    decoded_output = tokenizer.decode(outputs[0][inputs['input_ids'].size(1):], skip_special_tokens=True)
+    print("Decoded output:\n", decoded_output)
+    print(type(decoded_output))
+
     data = json.loads(decoded_output)
 
     data["date"] = datetime.today().strftime('%Y-%m-%d')
@@ -67,16 +125,52 @@ def evaluate(content):
 
     return data
 
+# Financial breakdown
+def financial_breakdown(content):
+    system_role = """
+    You are a financial analyst. Can you parse the financial information given to you in the following way:
+    Breakdown the revenue by source and provide its value
+    """
+    
+    # Prepare the input as before
+    chat = [
+        {"role": "system", "content": system_role},
+        {"role": "user", "content": content}
+    ]
+
+    # 2: Apply the chat template
+    formatted_chat = tokenizer.apply_chat_template(chat, tokenize=False, add_generation_prompt=True)
+    print("Formatted chat:\n", formatted_chat)
+
+    # 3: Tokenize the chat
+    inputs = tokenizer(formatted_chat, return_tensors="pt", add_special_tokens=False)
+
+    print(len(inputs["input_ids"][0])) 
+
+    # Mount the tokenized inputs on GPU
+    inputs = {key: tensor.to(device) for key, tensor in inputs.items()}
+    print("Tokenized inputs:\n", inputs)
+
+    # 4: Generate text from the model
+    outputs = model.generate(**inputs, max_new_tokens=1000)
+    print("Generated tokens:\n", outputs)
+    print(len(outputs)) 
+
+    # 5: Decode the output back to a string
+    decoded_output = tokenizer.decode(outputs[0][inputs['input_ids'].size(1):], skip_special_tokens=True)
+    print("Decoded output:\n", decoded_output)
+
+    return decoded_output
+
+
 # Function that summarizes using the model
 def summarize_with_generate(text, max_new_tokens=150):
     """
     Summarize using HF generate().
     """
 
-    prompt = f"""You are a strict filter. 
-    If the following text is related to sustainability, produce a concise summary of the sustainability-related aspects only.
-    Do not output phrases like ‘I will output nothing.’ If there is no sustainability text, your entire output should be blank—i.e., an empty string.
-    If not related to sustainability, produce absolutely nothing (no disclaimers, no placeholders).
+    prompt = f"""
+    Produce a concise summary of the sustainability-related aspects only.
 
     Text:
     {text}
@@ -140,4 +234,6 @@ def summarize(input, chunk_size=1024, overlap=0, max_new_tokens=100):
     
     combined_summary = "\n".join(partial_summaries)
     return combined_summary
+
+    
     

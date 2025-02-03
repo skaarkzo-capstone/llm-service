@@ -28,7 +28,7 @@ Instructions:
 2. Assign a score for each section based on the number of activities the company aligns with.
 3. Provide reasoning for the scores under the green, decarbonization, and social keys in the JSON output.
 
-ONLY OUTPUT THE JSON AND NOTHING ELSE.
+IMPORTANT: Output ONLY the JSON object exactly as specified below. Do not include any additional text, markdown formatting, or explanations.
 The output must strictly adhere to the JSON format described below:
 
 {
@@ -45,4 +45,22 @@ The output must strictly adhere to the JSON format described below:
         "social": "str"
     }
 }
+"""
+
+transaction_prompt = """
+
+Given the transaction purpose and context, can you evaluate whether the transaction falls under any of these criteria and provide the reasoning:
+
+- Green Activities: Renewable energy, energy efficiency, pollution prevention, sustainable resource management, clean transportation, green buildings, climate adaptation, and circular economy initiatives.
+- Decarbonization Activities: Carbon capture, electrification of industrial processes, low-carbon fuels, and methane reduction.
+- Social Activities: Essential services, affordable housing, infrastructure for underserved communities, and socioeconomic advancement programs.
+
+ONLY OUTPUT THE JSON AND NOTHING ELSE.
+The output must strictly adhere to the JSON format described below:
+
+{
+    "compliance": "boolean",
+    "reasoning": "str"
+}
+
 """
